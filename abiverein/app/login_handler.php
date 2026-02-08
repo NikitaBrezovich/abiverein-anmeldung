@@ -22,7 +22,7 @@ $stmt = $pdo->prepare('SELECT id, username, password_hash, is_admin FROM users W
 $stmt->execute([$username]);
 $user = $stmt->fetch();
 
-if (!$user || !password_verify($password, $user['password_hash']) || (int)$user['is_admin'] !== 1) {
+if (!$user || hash('sha256', $password) !== $user['password_hash'] || (int)$user['is_admin'] !== 1) {
   header('Location: ../public/login.php?err=1', true, 303);
   exit;
 }
