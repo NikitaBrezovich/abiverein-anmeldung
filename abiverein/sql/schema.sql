@@ -1,20 +1,37 @@
+CREATE DATABASE IF NOT EXISTS `abiverein`
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
 USE `abiverein`;
 
-CREATE TABLE IF NOT EXISTS `users` (
+CREATE TABLE IF NOT EXISTS `applications` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(50) NOT NULL,
-  `password_hash` CHAR(64) NOT NULL,  -- SHA-256 hex
-  `is_admin` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_username` (`username`)
-) ENGINE=InnoDB;
+  `child_name`   VARCHAR(120) NOT NULL,
 
--- Seed default admin: admin / Start123
--- If user exists, update password + admin flag
-INSERT INTO `users` (`username`, `password_hash`, `is_admin`)
-VALUES ('admin', SHA2('Start123', 256), 1)
-ON DUPLICATE KEY UPDATE
-  `password_hash` = VALUES(`password_hash`),
-  `is_admin` = 1;
+  `parent1_name` VARCHAR(120) NOT NULL,
+  `parent1_age`  TINYINT UNSIGNED NOT NULL,
+
+  `parent2_name` VARCHAR(120) NULL,
+  `parent2_age`  TINYINT UNSIGNED NULL,
+
+  `email` VARCHAR(254) NOT NULL,
+  `phone` VARCHAR(32)  NOT NULL,
+
+  `privacy_accepted`     TINYINT(1) NOT NULL DEFAULT 0,
+  `initial_payment_ack`  TINYINT(1) NOT NULL DEFAULT 0,
+
+  `source_ip` VARBINARY(16) NULL,
+  `user_agent` VARCHAR(255) NULL,
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_created_at` (`created_at`),
+  KEY `idx_email` (`email`),
+
+  CONSTRAINT `chk_parent1_age` CHECK (`parent1_age` BETWEEN 10 AND 120),
+  CONSTRAINT `chk_parent2_age` CHECK (`parent2_age` IS NULL OR `parent2_age` BETWEEN 10 AND 120),
+  CONSTRAINT `chk_privacy` CHECK (`privacy_accepted` IN (0,1)),
+  CONSTRAINT `chk_payment` CHECK (`initial_payment_ack` IN (0,1))
+) ENGINE=InnoDB;
